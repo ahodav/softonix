@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const config = require('../config/config');
 const jwt = require('json-web-token');
+const bcrypt = require('bcrypt');
 
 
 function jwtSignUser (user) {
@@ -10,6 +11,7 @@ function jwtSignUser (user) {
 module.exports = {
   async register (req, res) {
     try{
+      req.body.password =  bcrypt.hashSync(req.body.password, 3);
       const user = await User.create(req.body);
       res.send(user);
     } catch (err) {
@@ -29,7 +31,7 @@ module.exports = {
           error: 'The login was incorrect.'
         })
       }
-      const isPassword = password === user.password;
+      const isPassword = bcrypt.compareSync(password, user.password);
       if (!isPassword){
         return res.status(403).send({
           error: 'The password was incorrect.'
